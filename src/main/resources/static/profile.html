@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Feedback Portal</title>
+    <style>
+        /* --- RESET & BASE --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            /* PRESERVED: Red-to-Blue Gradient Background */
+            background: linear-gradient(135deg, #a31d24 0%, #004e92 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            color: #fff; /* Changed base text color to white for contrast */
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes popBadge { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* --- MAIN LAYOUT CONTAINER (GLASS) --- */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1); /* Transparent Glass */
+            backdrop-filter: blur(15px); /* Blur effect */
+            -webkit-backdrop-filter: blur(15px);
+            width: 100%;
+            max-width: 1100px; 
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+            animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- HEADER --- */
+        .panel-header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header h2 {
+            font-weight: 700;
+            color: #fff;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .header-controls span {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        /* --- LOGOUT BUTTON --- */
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(220, 38, 38, 0.8); /* Red tint on hover */
+            border-color: rgba(220, 38, 38, 0.8);
+        }
+
+        /* --- FORM GRID LAYOUT --- */
+        .form-content {
+            padding: 40px;
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr; /* Split: 40% / 60% */
+            gap: 50px;
+        }
+
+        /* --- SECTION STYLES --- */
+        .section-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 20px;
+            font-weight: 700;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+        }
+
+        /* --- INPUT FIELDS (LEFT SIDE) --- */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 2 columns within left side */
+            gap: 20px;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        .form-group {
+            margin-bottom: 5px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Transparent Inputs */
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+            transform: translateY(-5px); /* Lift effect */
+        }
+
+        /* --- SLIDERS & FEEDBACK (RIGHT SIDE) --- */
+        .ratings-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            gap: 20px;
+        }
+
+        .slider-label {
+            flex: 0 0 100px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .range-wrap {
+            flex: 1;
+            position: relative;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]:focus { outline: none; }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -7px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+
+        input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2); }
+
+        /* Badges adapted for transparency */
+        .badge {
+            flex: 0 0 100px;
+            text-align: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            background: #fff; /* Solid white background for readability */
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .badge.anim-pop { animation: popBadge 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        /* Dynamic Badge Text Colors (Background stays white for clean look) */
+        .badge[data-val="Poor"] { color: #c62828; }
+        .badge[data-val="Average"] { color: #ef6c00; }
+        .badge[data-val="Good"] { color: #1565c0; }
+        .badge[data-val="Very Good"] { color: #2e7d32; }
+        .badge[data-val="Excellent"] { background: #00c6ff; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+
+        /* --- TEXT AREAS --- */
+        .text-feedback-area {
+            margin-top: 25px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            resize: vertical;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 0.95rem;
+            min-height: 80px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        textarea::placeholder { color: rgba(255, 255, 255, 0.5); }
+        textarea:focus { 
+            outline: none; 
+            border-color: #fff; 
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px); /* Lift effect */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+        }
+
+        /* --- FOOTER / SUBMIT --- */
+        .form-footer {
+            margin-top: 30px;
+            text-align: right;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 20px;
+            grid-column: span 2; /* Span across full width at bottom */
+        }
+
+        button[type="submit"] {
+            background: #fff;
+            color: #004e92;
+            padding: 12px 35px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: #f0f0f0;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(0, 78, 146, 0.2);
+            border-top-color: #004e92;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+            display: none;
+        }
+
+        /* --- RESPONSIVE DESIGN --- */
+        @media (max-width: 900px) {
+            form { grid-template-columns: 1fr; gap: 30px; }
+            .form-footer { grid-column: span 1; text-align: center; }
+            button[type="submit"] { width: 100%; }
+        }
+        @media (max-width: 600px) {
+            .panel-header { flex-direction: column; gap: 15px; text-align: center; }
+            .input-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .slider-row { flex-wrap: wrap; gap: 10px; }
+            .slider-label { width: 100%; flex: 0 0 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    // --- SECURITY CHECKS (PRESERVED) ---
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    // Commented out for preview purposes so you can see the design
+    // if (!token) { alert("Please login first!"); window.location.href = "/login.html"; }
+    // if (role === "ADMIN") { alert("Admins cannot submit feedback."); window.location.href = "/admin/view-feedback.html"; }
+</script>
+
+<div class="glass-panel">
+    
+    <!-- Header -->
+    <div class="panel-header">
+        <h2>Student Feedback</h2>
+        <div class="header-controls">
+            <span>Welcome, Student</span>
+            <button class="logout-btn" onclick="performLogout()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <div class="form-content">
+        <form action="/feedback/save" method="post" id="feedbackForm">
+            
+            <!-- LEFT COLUMN: Identification -->
+            <div class="left-col">
+                <div class="section-title">Academic Details</div>
+                
+                <div class="input-grid">
+                    <div class="form-group full-width">
+                        <label>Student Name</label>
+                        <input type="text" name="studentName" required autocomplete="off" placeholder="Enter your full name">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Roll Number</label>
+                        <input type="text" name="rollNo" required autocomplete="off" placeholder="e.g. 12345">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Semester</label>
+                        <input type="text" name="semester" required autocomplete="off" placeholder="e.g. 4th">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Department</label>
+                        <input type="text" name="department" required autocomplete="off" placeholder="e.g. Computer Science">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Faculty Name</label>
+                        <input type="text" name="facultyName" required autocomplete="off" placeholder="Professor Name">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Subject</label>
+                        <input type="text" name="subject" required autocomplete="off" placeholder="Subject Code or Name">
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Ratings & Feedback -->
+            <div class="right-col">
+                <div class="section-title">Performance Assessment</div>
+                
+                <div class="ratings-container">
+                    
+                    <!-- Slider Item -->
+                    <div class="slider-row">
+                        <span class="slider-label">Knowledge</span>
+                        <div class="range-wrap">
+                            <input type="range" min="1" max="5" value="3" class="rating-slider" data-target="knowledge">
+                        </div>
+                        <span class="badge" id="display-knowledge" data-val="Good">Good</span>
+                        <input type="hidden" name="knowledge" id="input-knowledge" value="Good">
+                    </div>
+
+                    <!-- Slider Item -->
+                    <div class="slider-row">
+                        <span class="slider-label">Comm.</span>
+                        <div class="range-wrap">
+                            <input type="range" min="1" max="5" value="3" class="rating-slider" data-target="communication">
+                        </div>
+                        <span class="badge" id="display-communication" data-val="Good">Good</span>
+                        <input type="hidden" name="communication" id="input-communication" value="Good">
+                    </div>
+
+                    <!-- Slider Item -->
+                    <div class="slider-row">
+                        <span class="slider-label">Clarity</span>
+                        <div class="range-wrap">
+                            <input type="range" min="1" max="5" value="3" class="rating-slider" data-target="clarity">
+                        </div>
+                        <span class="badge" id="display-clarity" data-val="Good">Good</span>
+                        <input type="hidden" name="clarity" id="input-clarity" value="Good">
+                    </div>
+
+                    <!-- Slider Item -->
+                    <div class="slider-row">
+                        <span class="slider-label">Interaction</span>
+                        <div class="range-wrap">
+                            <input type="range" min="1" max="5" value="3" class="rating-slider" data-target="interaction">
+                        </div>
+                        <span class="badge" id="display-interaction" data-val="Good">Good</span>
+                        <input type="hidden" name="interaction" id="input-interaction" value="Good">
+                    </div>
+
+                </div>
+
+                <div class="text-feedback-area">
+                    <div class="form-group">
+                        <label>What did you like?</label>
+                        <textarea name="likes" rows="2" placeholder="Share positive points..."></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label>Suggestions for improvement</label>
+                        <textarea name="suggestions" rows="2" placeholder="Any areas to improve?"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Width Footer -->
+            <div class="form-footer">
+                <button type="submit">
+                    <span class="spinner"></span>
+                    Submit Feedback
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    // --- LOGOUT LOGIC ---
+    function performLogout() {
+        // Direct logout without confirmation
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+    }
+
+    // --- SLIDER LOGIC ---
+    const ratingTexts = ["Poor", "Average", "Good", "Very Good", "Excellent"];
+
+    document.querySelectorAll('.rating-slider').forEach(slider => {
+        slider.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            const targetName = this.getAttribute('data-target');
+            const textValue = ratingTexts[value - 1];
+
+            const displayEl = document.getElementById(`display-${targetName}`);
+            const inputEl = document.getElementById(`input-${targetName}`);
+
+            // Update text
+            if (displayEl.textContent !== textValue) {
+                displayEl.textContent = textValue;
+                inputEl.value = textValue;
+                
+                // Update Badge Color Logic
+                displayEl.setAttribute("data-val", textValue);
+
+                // Re-trigger animation
+                displayEl.classList.remove('anim-pop');
+                void displayEl.offsetWidth; // Force Reflow
+                displayEl.classList.add('anim-pop');
+            }
+        });
+    });
+
+    // --- SUBMIT LOGIC ---
+    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+        e.preventDefault(); 
+
+        const btn = this.querySelector("button[type=submit]");
+        const spinner = btn.querySelector(".spinner");
+
+        // UI State: Loading
+        btn.style.opacity = '0.8';
+        btn.style.pointerEvents = "none";
+        spinner.style.display = "inline-block";
+        btn.childNodes[2].textContent = " Sending..."; // Update text node
+
+        // Simulate network delay for animation, then submit
+        setTimeout(() => {
+            this.submit(); 
+        }, 800);
+    });
+</script>
+
+</body>
+</html>
