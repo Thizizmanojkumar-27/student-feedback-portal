@@ -21,7 +21,7 @@ A Spring Boot based Student Feedback Management System with JWT Authentication.
 ## How to Run
 1. Clone the repository
 2. Configure database in `application.properties`
-3. Run the application using:
+3. Run the application using: intellij/Eclipse
 4. Access application at `http://localhost:8080`
 
 ## Author
